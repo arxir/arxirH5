@@ -2,98 +2,79 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>js瀑布流效果</title>
-	<style type="text/css">
-	*{
-		padding:0;
-		margin:0;
-	}
-	ul{
-		list-style: none;
-	}
-	li{
-		position: absolute;
-		background: pink;
-		width: 200px;
-	}
-	</style>
+	<title>滚屏切换</title>
+	<style type="text/css"></style>
 </head>
 <body>
-	<ul>
-
-	</ul>
 </body>
 </html>
 <script type="text/javascript">
-//获取ul
-var ul = document.getElementsByTagName("ul")[0];
-
-createLi();
-
-//创建li
-function createLi(){
-	for(var i = 0 ; i < 20 ; i++){
-		var li = document.createElement("li");
-		li.style.height = Math.floor(Math.random()*200+100)+"px";  //100-300之间
-		li.innerHTML = i;
-		//将li添加到ul中
-		ul.appendChild(li);
-	}
-	//排列li
-	serializeLi();
-}
-//重新排列li
-function serializeLi(){
-	//获取屏幕宽度
-	var clientW = document.documentElement.clientWidth;
-	//计算每行能放多少列
-	var n = Math.floor(clientW/210);
-	//设置ul宽度，实现居中对齐
-	ul.style.width = n*210-10+"px";
-	//获取所有的li
-	var lis = ul.getElementsByTagName("li");
-	var arrH = [];  //储存每列高度
-	//排列
-	for(var i = 0 ; i < lis.length; i++){
-		//判断是否是第一行
-		if(i < n){
-			lis[i].style.top = 0;
-			lis[i].style.left = i*210+"px";
-			//记录高度
-			arrH.push(lis[i].offsetHeight);
-		}else{
-			//找到最矮一行
-			var min = 0;
-			for(var j = 1 ; j < arrH.length; j++){
-				if(arrH[min] > arrH[j]){
-					min = j;
-				}
+var Fullscroll = function(param){
+	this.num = param.num;  // 滚屏数量
+	this.colors = param.color ? param.color : ["yellow","pink","lightgreen","skyblue","orangered"];
+	this.index = 1;//默认显示的下一屏
+	this.body = document.querySelector("body");
+	this.clientH = document.documentElement.clientHeight;
+	this.lis = document.getElementsByTagName("li");
+	var that = this ;
+	window.onmousewheel = function(e){
+		var event = e || window.event;
+		//获取滚轮方向
+		if(event.wheelDelta > 0){  //向上滚动滚轮
+			//向上切换
+			that.body.style.top = "-"+(that.clientH*(that.index-1))+"px";
+			that.body.style.transition = "1s";
+			//移除现有导航样式
+			that.lis[that.index].style.backgroundColor = "#f1f1f1";
+			that.lis[that.index-1].style.backgroundColor = "pink";
+			//最开始一屏的index=0
+			if(that.index > 1){
+				that.index--;
 			}
-			lis[j].style.top = arrH[min]+5+"px";
-			lis[j].style.left = min*210+"px";
-			arrH[min] += lis[i].
+		}else{  //向下滚动滚轮
+			//向下切换
+			//bodys.style.transform = "translateY(-"+clientH+"px)";  //限制postion:fixed
+			that.body.style.top = "-"+(that.clientH*that.index)+"px";
+			that.body.style.transition = "1s";
+			//移除现有导航样式
+			that.lis[that.index-1].style.backgroundColor = "#f1f1f1";
+			that.lis[that.index].style.backgroundColor = "pink";
+			//最后一屏的index=4
+			if(that.index < that.num-1){
+				that.index++;  //当滚动一屏之后，索引+1
+			}
 		}
 	}
 }
-
-//当改变窗口大小时触发事件
-window.onresize = function(){
-	//重新排列li
-	seralizeLi();
+Fullscroll.prototype = {
+	//初始化
+	init:function(){
+		//获取body
+		this.body.setAttribute("style","margin:0;overflow-y: hidden; position: absolute;  width: 100%;top:0;");
+		//创建ul
+		var ul = document.createElement("ul");
+		ul.setAttribute("style","display:flex;margin:0;padding:0;list-style:none;position: fixed;width:100%;bottom:0;");
+		this.body.appendChild(ul);
+		//创建div
+		for(var i = 1 ; i < this.num; i++){
+			//创建div
+			var div = document.createElement("div");
+			div.innerHTML = i;//给个数字方便观察
+			div.style.height = this.clientH+"px";
+			div.style.backgroundColor = this.colors[i-1];
+			//插入到body中
+			this.body.appendChild(div);
+			//创建li
+			var li = document.createElement("li");
+			li.innerHTML = "第"+i+"屏";
+			li.setAttribute("style","padding:0;margin:0;flex:1;border:1px #fff solid;background: #f1f1f1;text-align: center;");
+			if(i == 1){
+				li.style.backgroundColor = "pink";
+			}
+			//插入到ul中
+			ul.appendChild(li);
+		}
+	},
 }
-
-window.onscroll = function(){
-	//获取真实高度
-	var trueHeight = document.documentElement.scrollHeight;
-	//获取可视区高度
-	var seeHeight = document.documentElement.clientHeight;
-	//获取可滚动高度
-	var scrollHeight = trueHeight-seeHeight;
-	//获取已经滚动的高度
-	var scrollTop = document.documentElement.scrollTop;
-	//判断是否已经滚到底部
-	if(scrollTop == scrollHeight){
-		createLi();
-	}
-}
+new Fullscroll({num:4,color:["red","green","black","blue","gray"]}).init();
 </script>
