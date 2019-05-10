@@ -1,1 +1,99 @@
-666
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>js瀑布流效果</title>
+	<style type="text/css">
+	*{
+		padding:0;
+		margin:0;
+	}
+	ul{
+		list-style: none;
+	}
+	li{
+		position: absolute;
+		background: pink;
+		width: 200px;
+	}
+	</style>
+</head>
+<body>
+	<ul>
+
+	</ul>
+</body>
+</html>
+<script type="text/javascript">
+//获取ul
+var ul = document.getElementsByTagName("ul")[0];
+
+createLi();
+
+//创建li
+function createLi(){
+	for(var i = 0 ; i < 20 ; i++){
+		var li = document.createElement("li");
+		li.style.height = Math.floor(Math.random()*200+100)+"px";  //100-300之间
+		li.innerHTML = i;
+		//将li添加到ul中
+		ul.appendChild(li);
+	}
+	//排列li
+	serializeLi();
+}
+//重新排列li
+function serializeLi(){
+	//获取屏幕宽度
+	var clientW = document.documentElement.clientWidth;
+	//计算每行能放多少列
+	var n = Math.floor(clientW/210);
+	//设置ul宽度，实现居中对齐
+	ul.style.width = n*210-10+"px";
+	//获取所有的li
+	var lis = ul.getElementsByTagName("li");
+	var arrH = [];  //储存每列高度
+	//排列
+	for(var i = 0 ; i < lis.length; i++){
+		//判断是否是第一行
+		if(i < n){
+			lis[i].style.top = 0;
+			lis[i].style.left = i*210+"px";
+			//记录高度
+			arrH.push(lis[i].offsetHeight);
+		}else{
+			//找到最矮一行
+			var min = 0;
+			for(var j = 1 ; j < arrH.length; j++){
+				if(arrH[min] > arrH[j]){
+					min = j;
+				}
+			}
+			lis[j].style.top = arrH[min]+5+"px";
+			lis[j].style.left = min*210+"px";
+			arrH[min] += lis[i].
+		}
+	}
+}
+
+//当改变窗口大小时触发事件
+window.onresize = function(){
+	//重新排列li
+	seralizeLi();
+}
+
+window.onscroll = function(){
+	//获取真实高度
+	var trueHeight = document.documentElement.scrollHeight;
+	//获取可视区高度
+	var seeHeight = document.documentElement.clientHeight;
+	//获取可滚动高度
+	var scrollHeight = trueHeight-seeHeight;
+	//获取已经滚动的高度
+	var scrollTop = document.documentElement.scrollTop;
+	//判断是否已经滚到底部
+	if(scrollTop == scrollHeight){
+		createLi();
+	}
+}
+</script>
